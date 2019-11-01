@@ -1,0 +1,1 @@
+IPC renderer which will send an event with a payload from html file to the main js file
