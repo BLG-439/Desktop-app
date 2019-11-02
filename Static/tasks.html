@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="tasksWindow.css">
+    <title>Hello World!</title>
+  </head>
+  <body>
+    <script>
+        window.$ = window.jQuery=require("jquery");
+        const electron = require('electron');
+        const {ipcRenderer} = electron;
+    </script> <!--In order to enable jQuery use in the electron document-->
+    <div id="task-board">
+      <div id="taskBoardBar">
+        <img id="close-button" src="C:\Users\DELL\Desktop\Git\Desktop background time scheduler app\venv\Desktop scheduler\Assets\Icons\Png\iconfinder_basics-22_296812.png">
+        <script>
+            document.getElementById("close-button").onclick=function(e){
+              ipcRenderer.send("closeTasksWindow");
+            }
+    
+            // Make the DIV element draggable:
+            dragElement(document.getElementById("taskBoardBar"));
+    
+            function dragElement(elmnt) {
+              var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+              if (document.getElementById(elmnt.id + "header")) {
+                // if present, the header is where you move the DIV from:
+                document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+              } else {
+                // otherwise, move the DIV from anywhere inside the DIV:
+                elmnt.onmousedown = dragMouseDown;
+              }
+    
+              function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+              }
+    
+              function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                ipcRenderer.send("moveWindow", pos3, pos4, e.clientX, e.clientY);
+                // // calculate the new cursor position:
+                // pos1 = pos3 - e.clientX;
+                // pos2 = pos4 - e.clientY;
+                // pos3 = e.clientX;
+                // pos4 = e.clientY;
+                // // set the element's new position:
+                // document.getElementById("task-board").style.top = (document.getElementById("task-board").offsetTop - pos2) + "px";
+                // document.getElementById("task-board").style.left = (document.getElementById("task-board").offsetLeft - pos1) + "px";
+              }
+    
+              function closeDragElement() {
+                // stop moving when mouse button is released:
+                document.onmouseup = null;
+                document.onmousemove = null;
+              }
+            }
+          </script>
+      </div>
+      <div id="taskList">
+        <ul id="task-list">
+          <li>
+            <section id="time">All day</section>
+            <section id="task">BONUS BLG 413E - System programming</section>
+          </li>
+        </ul>
+      </div>
+      <img id="addTaskButton" src="C:\Users\DELL\Desktop\Git\Desktop background time scheduler app\venv\Desktop scheduler\Assets\Icons\Png\iconfinder_sign-add_299068.png">
+    </div>
+
+    </body>
+</html>

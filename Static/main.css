@@ -1,17 +1,79 @@
-#task-board{
-    height: 200px;
+#clockBlock{
+    position: relative;
     width: 400px;
-    background-color: bisque;
-    color: black;
-    position: absolute;
-    top:100px;
-    left:100px;
+    height: 400px;
 }
 
-#close-button{
+#numbers p{
+    font: 27px arial;
+    text-align: center;
+}
+#twelve{
     position: absolute;
-    top: 10px;
-    right: 10px;
-    height: 20px;
-    width: 20px;
+    top:3px;
+    left: 185px;
+}
+#eleven{
+    position: absolute;
+    top:24px;
+    left: 110px;
+}
+#ten{
+    position: absolute;
+    top:80px;
+    left: 53px;
+}
+#nine{
+    position: absolute;
+    top:156px;
+    left: 40px;
+}
+#eight{
+    position: absolute;
+    top:233px;
+    left: 60px;
+}
+#seven{
+    position: absolute;
+    top:289px;
+    left: 117px;
+}
+#six{
+    position: absolute;
+    top:309px;
+    left: 192px;
+}
+#five{
+    position: absolute;
+    top:289px;
+    left: 268px;
+}
+#four{
+    position: absolute;
+    top:233px;
+    left: 325px;
+}
+#three{
+    position: absolute;
+    top:156px;
+    left: 345px;
+}
+#two{
+    position: absolute;
+    top:80px;
+    left: 325px;
+}
+#one{
+    position: absolute;
+    top:24px;
+    left: 268px;
+}
+
+
+
+.Task{
+    border-radius: 100%;
+    border: 2px solid blue;
+    padding: 0px 5px;
+    cursor: pointer;
 }

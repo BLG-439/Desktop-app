@@ -1,0 +1,42 @@
+html, body{
+    position: relative;
+    height:100%;
+    width: 100%;
+    left: -7px;
+    top:-8px;
+    padding: 0px;
+}
+
+#task-board{
+    margin: 0px;
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    padding: 0px;
+    background-color: #ffe4c4;
+    height: 100%;
+    width: 100%;
+    color: black;
+}
+
+#taskBoardBar{
+    background-image: linear-gradient(rgba(150,80,0,0.3), rgba(0,0,0,0));
+    width: 100%;
+    height: 40px;
+}
+
+#close-button{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    height: 20px;
+    width: 20px;
+}
+
+#addTaskButton{
+    position: absolute;
+    width:40px;
+    height:40px;
+    bottom: 30px;
+    right: 40px;
+}

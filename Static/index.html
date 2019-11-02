@@ -6,6 +6,12 @@
     <title>Hello World!</title>
   </head>
   <body>
+    <script>
+      window.$ = window.jQuery=require("jquery"); //In order to enable jQuery use in the electron document
+      const electron = require('electron');
+      const {ipcRenderer} = electron;
+    </script>
+
     <nav class="navbar navbar-expand-sm bg-light">
 
       <!-- Links -->
@@ -25,14 +31,28 @@
 
     <div class="container">
       <div id="clockBlock">
-        <canvas id="Clock" width="400" height="400" style="background-color: rgba(0,0,0,0)"></canvas>
-        <script>
+        <canvas id="Clock" width="400" height="400"></canvas>
+        <div id="numbers">
+          <p id="one">1</p>
+          <p id="two">2</p>
+          <p id="three" class="Task">3</p>
+          <p id="four">4</p>
+          <p id="five">5</p>
+          <p id="six" class="Task">6</p>
+          <p id="seven">7</p>
+          <p id="eight">8</p>
+          <p id="nine" class="Task">9</p>
+          <p id="ten">10</p>
+          <p id="eleven">11</p>
+          <p id="twelve" class="Task">12</p>
+        </div>
+        <script type="text/javascript">
           var clock = document.getElementById("Clock");
           var ctx = clock.getContext("2d");
           var radius = clock.height / 2;
           ctx.translate(radius, radius);
           radius = radius * 0.90;
-          drawNumbers(ctx, radius);      
+          // drawNumbers(ctx, radius);      
           setInterval(drawClock, 1000);
     
           function drawClock() {
@@ -108,7 +128,12 @@
             ctx.stroke();
             ctx.rotate(-pos);
           }
-    
+
+          $(document).ready(function(){
+            $("#numbers p.Task").click(function(event){
+              ipcRenderer.send("openTasksWindow", event.target.id);
+            })
+          });
         </script>
       </div>
 
@@ -117,13 +142,8 @@
         <button type="submit">Submit</button>
       </form>
       <script>
-        const electron = require('electron');
-        const {ipcRenderer} = electron;
-
-
         const form=document.querySelector('form');
         form.addEventListener('submit', submitForm);
-
 
         function submitForm(e){
             e.preventDefault();
@@ -140,15 +160,5 @@
       </div>
 
     </div>
-
-    <div id="task-board">
-      <img id="close-button" src="C:\Users\DELL\Desktop\Git\Desktop background time scheduler app\venv\Desktop scheduler\Assets\Icons\Png\iconfinder_basics-22_296812.png">
-      
-      <script>
-        document.getElementById("close-button").onclick=function(e){
-          document.getElementById("task-board").style.display="none";
-        }
-      </script>
-    </div>
-  </body>
+    </body>
 </html>

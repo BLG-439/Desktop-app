@@ -10,6 +10,7 @@ const {app, BrowserWindow, Menu, ipcMain} = electron;
 
 let mainWindow; //-> Variable to represent our main window
 let item1Window; //-> Another window variable
+let tasksWindow; //-> Variable to represent the window of tasks
 
 //Firstly, in electron, we have to listen when the app is ready in order to run the functions
 app.on('ready', function(){
@@ -48,7 +49,8 @@ function createItem1Window(){
         title: "Bullshit",
         webPreferences: {
             nodeIntegration: true //This is needed in order to write node functions as script in the html file
-        }
+        },
+        frame: false
     });
     //Load the html file to the window
     item1Window.loadURL(url.format({
@@ -121,3 +123,58 @@ if(process.env.NODE_ENV !== 'production'){
         ]
     })
 }
+
+
+
+
+
+
+//Handle tasks window
+function createTasksWindow(){
+    //Create new window
+    tasksWindow= new BrowserWindow({
+        //Options for the new window to be created
+        width: 650,
+        height: 550,
+        title: "Tasks",
+        webPreferences: {
+            nodeIntegration: true //This is needed in order to write node functions as script in the html file
+        },
+        autoHideMenuBar: true,
+        opacity:0.97,
+        //type: "toolbar"//,
+        frame: false
+    });
+    //Load the html file to the window
+    tasksWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'tasks.html'),
+        protocol: 'file:',
+        slashes: true
+    })); //this function is basically passing file://dirname/index.html to mainWindow url
+
+    tasksWindow.on('close', function(){
+        addWindow=null;
+    });
+}
+
+ipcMain.on("openTasksWindow", function(e, hour){
+    console.log(hour);
+    createTasksWindow();
+})
+
+ipcMain.on("moveWindow", function(e, x1, y1, x2, y2){
+    let display = electron.screen.getPrimaryDisplay();
+    let kot=tasksWindow.getPosition();
+
+    const { width, height } = display.bounds
+    tasksWindow.setBounds({
+        x: kot[0]+x2-x1,
+        y: kot[1]+y2-y1,
+        width: 650,
+        height: 550
+    })
+})
+
+ipcMain.on("closeTasksWindow", function(){
+    tasksWindow.close();
+})
