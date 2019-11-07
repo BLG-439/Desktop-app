@@ -11,6 +11,9 @@ const {app, BrowserWindow, Menu, ipcMain} = electron;
 let mainWindow; //-> Variable to represent our main window
 let item1Window; //-> Another window variable
 let tasksWindow; //-> Variable to represent the window of tasks
+let addTaskWindow; //-> Variable for adding a new task window
+
+let clockNums=["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]; //Clock numbers as reference for the correct time
 
 //Firstly, in electron, we have to listen when the app is ready in order to run the functions
 app.on('ready', function(){
@@ -90,13 +93,12 @@ const mainMenuTemplate=[
 
 //Catch assigned_event_name
 ipcMain.on("event_kot", function(e, item){
-    console.log(item);
     var fs = require("fs");
     var stream = fs.createWriteStream("temp.txt", {flags:'a'});
     stream.write(item+'\n');
     stream.close();
     console.log("Successfully Written to File.");
-    mainWindow.webContents.send("event_kot", item);
+    mainWindow.webContents.send("event_kot", item); //In order to be caught by the html file and get inserted
 });
 
 
@@ -126,10 +128,7 @@ if(process.env.NODE_ENV !== 'production'){
 
 
 
-
-
-
-//Handle tasks window
+//Handle show-tasks window
 function createTasksWindow(){
     //Create new window
     tasksWindow= new BrowserWindow({
@@ -157,12 +156,15 @@ function createTasksWindow(){
     });
 }
 
-ipcMain.on("openTasksWindow", function(e, hour){
-    console.log(hour);
+ipcMain.on("openTasksWindow", function(e, tasks){
     createTasksWindow();
+    function showTasks(tasks){
+        tasksWindow.webContents.send("showTasks", tasks);
+    }
+    setTimeout(showTasks, 1000, tasks);
 })
 
-ipcMain.on("moveWindow", function(e, x1, y1, x2, y2){
+ipcMain.on("moveTasksWindow", function(e, x1, y1, x2, y2){
     let display = electron.screen.getPrimaryDisplay();
     let kot=tasksWindow.getPosition();
 
@@ -178,3 +180,78 @@ ipcMain.on("moveWindow", function(e, x1, y1, x2, y2){
 ipcMain.on("closeTasksWindow", function(){
     tasksWindow.close();
 })
+
+
+//Handle add-task window
+function createAddTaskWindow(){
+    //Create new window
+    addTaskWindow= new BrowserWindow({
+        //Options for the new window to be created
+        width: 350,
+        height: 400,
+        title: "Tasks",
+        webPreferences: {
+            nodeIntegration: true //This is needed in order to write node functions as script in the html file
+        },
+        autoHideMenuBar: true,
+        opacity:0.97,
+        //type: "toolbar"//,
+        frame: false
+    });
+    //Load the html file to the window
+    addTaskWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'add_task.html'),
+        protocol: 'file:',
+        slashes: true
+    })); //this function is basically passing file://dirname/index.html to mainWindow url
+
+    addTaskWindow.on('close', function(){
+        addWindow=null;
+    });
+}
+
+ipcMain.on("addNewTask", function(e, date){
+    createAddTaskWindow();
+    function getTheDate(date){
+        addTaskWindow.webContents.send("gettingDate", date);
+    }
+    setTimeout(getTheDate, 1000, date);
+});
+ipcMain.on("moveAddTaskWindow", function(e, x1, y1, x2, y2){
+    let display = electron.screen.getPrimaryDisplay();
+    let position=addTaskWindow.getPosition();
+
+    const { width, height } = display.bounds
+    addTaskWindow.setBounds({
+        x: position[0]+x2-x1,
+        y: position[1]+y2-y1,
+        width: 350,
+        height: 400
+    })
+})
+ipcMain.on("closeAddTask", function(){
+    addTaskWindow.close();
+})
+ipcMain.on("saveTask", function(e, date, title, fromTime, toTime, reminders){//Saving the task to the log file
+    var fs = require("fs");
+    var stream = fs.createWriteStream("temp.txt", {flags:'a'});
+    stream.write(date + "||" + title + "||" + fromTime + "||" + toTime + "||" + reminders +'\n');
+    stream.close();
+    addTaskWindow.close();
+})
+
+
+//Synchronization functions
+ipcMain.on("synchDate", function(e, date){
+    var fs = require("fs");
+    var stream = fs.readFileSync("C:/Users/DELL/Desktop/Git/Desktop background time scheduler app/venv/Desktop scheduler/temp.txt", 'utf8');
+    var tasks=stream.split("\n");
+    var hold=[];
+    for(var i=0; i<tasks.length-1; i++){
+        tasks[i]=tasks[i].split("||");
+        if(tasks[i][0]==date){
+            hold.push(tasks[i]);
+        }
+    }
+    mainWindow.webContents.send("dailyTasks", hold);
+});

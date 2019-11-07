@@ -69,6 +69,14 @@
     left: 268px;
 }
 
+#addTaskButton{
+    position: absolute;
+    right: 40px;
+    bottom: 100px;
+    height: 60px;
+    width: 60px;
+    cursor: pointer;
+}
 
 
 .Task{
