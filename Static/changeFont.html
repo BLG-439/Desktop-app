@@ -1,0 +1,49 @@
+<html>
+    <head></head>
+    <style>
+          
+    </style>
+    <body>
+
+    <span data-bg-color="#b84130" data-color="#ffffff"
+    style="background-color: #b84130"></span>
+    <span data-bg-color="#363d98" data-color="#ffffff"
+    style="background-color: #363d98"></span>
+    <span data-bg-color="#FFD5CD" data-color="#333333"
+    style="background-color: #FFD5CD"></span>
+
+    
+    <div>
+    <label>Color:</label>
+    <input id='color' class="input-color-picker" type="color" data-id="color" name="Color">
+    <button>Apply</button>
+    </div>
+
+    <div>
+    <label>Background:</label>
+    <input class="input-color-picker" type="color" 
+            data-id="bg-color" name="Background">
+    <button>Apply</button>
+    </div>
+
+    <script>
+    window.$ = window.jQuery=require("jquery"); //In order to enable jQuery use in the electron document
+    const electron = require('electron');
+    const {ipcRenderer} = electron;
+
+   
+    
+    $(document).ready(function(){
+    $('button').click(function(event){
+    var link =document.querySelector('input.input-color-picker').value;
+    console.log(link);
+    ipcRenderer.send("click font color",link);
+    })
+    });
+  
+
+    </script>
+
+    </body>
+
+</html>

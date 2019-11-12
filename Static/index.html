@@ -3,14 +3,21 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="main.css">
-    <title>Hello World!</title>
+    <link href="css/iCalendar.css" rel="stylesheet">
+    <script src="js/iCalendar.js"></script>
+
+    <title>Tambourine</title>
   </head>
+
   <body>
+    
     <script>
       window.$ = window.jQuery=require("jquery"); //In order to enable jQuery use in the electron document
       const electron = require('electron');
       const {ipcRenderer} = electron;
     </script>
+    
+    
 
     <nav class="navbar navbar-expand-sm bg-light">
 
@@ -20,7 +27,7 @@
           <a class="nav-link" href="index.html">Clock</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="calendar.html">Calendar</a>
+          <a class="nav-link" href="monthlycalendar.html">Calendar</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Profile</a>
@@ -28,9 +35,12 @@
       </ul>
     
     </nav>
-
+    <h1 id='clockheader'>Clock</h1>
+     
     <div class="container">
+        <span id="calendar"></span>
       <div id="clockBlock">
+         
         <canvas id="Clock" width="400" height="400"></canvas>
         <div id="numbers">
           <p id="one">1</p>
@@ -45,8 +55,9 @@
           <p id="ten">10</p>
           <p id="eleven">11</p>
           <p id="twelve" class="Task">12</p>
+         
         </div>
-        <script type="text/javascript">
+          <script type="text/javascript">
           var clock = document.getElementById("Clock");
           var ctx = clock.getContext("2d");
           var radius = clock.height / 2;
@@ -57,7 +68,7 @@
     
           function drawClock() {
             ctx.beginPath();
-            ctx.arc(0, 0, radius*0.75, 0, 2*Math.PI);
+            ctx.arc(0, 0, radius*1, 0, 2*Math.PI);
             ctx.fillStyle = 'white';
             ctx.fill();
             drawFace(ctx, radius);
@@ -128,12 +139,34 @@
             ctx.stroke();
             ctx.rotate(-pos);
           }
+          var iCal = new iCalendar('calendar');
+          iCal.render();
 
-          $(document).ready(function(){
-            $("#numbers p.Task").click(function(event){
-              ipcRenderer.send("openTasksWindow", event.target.id);
-            })
+          
+          
+          ipcRenderer.on('item:add',function(e,item){
+            
+            let selectedElement = document.getElementById('calendar-body').getElementsByClassName('selected-link');
+            
+            var para = document.createElement("li");
+            para.style.lineHeight = "15px";
+            para.style.align = "left";
+            selectedElement[0].style.overflow = "scroll";
+            let cellText = document.createTextNode(item);
+            para.appendChild(cellText);
+            
+            selectedElement[0].appendChild(para);
+            selectedElement[0].style.color = "magenta";
           });
+          
+          
+
+          document.addEventListener('iCalendarDateSelected', function(event) {
+          console.log(iCal.selectedDate);
+          ipcRenderer.send("openTasksWindow", event.target.id);
+          })
+          
+         
         </script>
       </div>
 
@@ -141,7 +174,27 @@
         <input type="text" id="input1" autofocus>
         <button type="submit">Submit</button>
       </form>
+
       <script>
+        document.body.style.backgroundImage = localStorage.getItem('back') ? "url('"+localStorage.getItem('back')+"')": "url('red.jpeg')";
+        
+        ipcRenderer.on("click image", function(e,link){
+       
+        document.body.style.backgroundImage = "url('"+link+"')";
+        localStorage.setItem('back',link);
+        })
+
+        
+        document.getElementById('clockheader').style.color = localStorage.getItem('color') ? localStorage.getItem('color') : '#000000';
+        ipcRenderer.on("click font color", function(e,link){
+
+        document.getElementById('clockheader').style.color = link;
+        localStorage.setItem('color',link);
+        
+        }) 
+
+
+
         const form=document.querySelector('form');
         form.addEventListener('submit', submitForm);
 
@@ -150,6 +203,8 @@
             const item = document.querySelector("#input1").value;
             ipcRenderer.send("event_kot", item);
         }
+        
+
       </script>
       
       <div id="Weather">

@@ -1,3 +1,6 @@
+#Clock{
+    display: inline;
+}
 #clockBlock{
     position: relative;
     width: 400px;
@@ -76,4 +79,9 @@
     border: 2px solid blue;
     padding: 0px 5px;
     cursor: pointer;
+}
+
+#calendar{
+    margin-left: 500px;
+    margin-top: 0px;
 }

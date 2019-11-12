@@ -11,7 +11,7 @@ const {app, BrowserWindow, Menu, ipcMain} = electron;
 let mainWindow; //-> Variable to represent our main window
 let item1Window; //-> Another window variable
 let tasksWindow; //-> Variable to represent the window of tasks
-
+let bgWindow;
 //Firstly, in electron, we have to listen when the app is ready in order to run the functions
 app.on('ready', function(){
     //Create new window
@@ -60,10 +60,55 @@ function createItem1Window(){
     })); //this function is basically passing file://dirname/index.html to mainWindow url
 
     item1Window.on('close', function(){
-        addWindow=null;
+        item1Window=null;
     });
 }
+function createChangeWPWindow(){
+    //Create new window
+    bgWindow= new BrowserWindow({
+        //Options for the new window to be created
+        width: 600,
+        height: 600,
+        title: "Wallpaper",
+        webPreferences: {
+            nodeIntegration: true //This is needed in order to write node functions as script in the html file
+        },
+        frame: false
+    });
+    //Load the html file to the window
+    bgWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'changeWallpaper.html'),
+        protocol: 'file:',
+        slashes: true
+    })); //this function is basically passing file://dirname/index.html to mainWindow url
 
+    bgWindow.on('close', function(){
+        bgWindow=null;
+    });
+}
+function createChangeFontWindow(){
+    //Create new window
+    fontWindow= new BrowserWindow({
+        //Options for the new window to be created
+        width: 300,
+        height: 300,
+        title: "Font",
+        webPreferences: {
+            nodeIntegration: true //This is needed in order to write node functions as script in the html file
+        },
+        frame: false
+    });
+    //Load the html file to the window
+    fontWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'changeFont.html'),
+        protocol: 'file:',
+        slashes: true
+    })); //this function is basically passing file://dirname/index.html to mainWindow url
+
+    fontWindow.on('close', function(){
+        fontWindow=null;
+    });
+}
 //Create menu template
 const mainMenuTemplate=[
     {
@@ -81,6 +126,26 @@ const mainMenuTemplate=[
                 click(){
                     //Whatever you want to happen when you click this item
                     app.quit();
+                }
+            }
+        ]
+    },
+
+    {
+        label: 'Design',
+        submenu: 
+        [
+            {
+                label: 'Change Wallpaper',
+                click(){
+                    createChangeWPWindow();
+                }
+            },
+
+            {
+                label: 'Change Font',
+                click(){
+                    createChangeFontWindow();
                 }
             }
         ]
@@ -123,11 +188,6 @@ if(process.env.NODE_ENV !== 'production'){
         ]
     })
 }
-
-
-
-
-
 
 //Handle tasks window
 function createTasksWindow(){
@@ -174,7 +234,27 @@ ipcMain.on("moveWindow", function(e, x1, y1, x2, y2){
         height: 550
     })
 })
+    
+    
 
-ipcMain.on("closeTasksWindow", function(){
+    ipcMain.on("click image",function(e,link){
+    console.log('red');
+    mainWindow.webContents.send("click image",link);
+    bgWindow.close();
+    })
+
+    ipcMain.on("click font color",function(e,link){
+        console.log('red');
+        mainWindow.webContents.send("click font color",link);
+        //fontWindow.close();
+        })
+    
+    ipcMain.on("closeTasksWindow", function(){
     tasksWindow.close();
-})
+    })
+
+    ipcMain.on('item:add',function(event,item){
+            
+        mainWindow.webContents.send("item:add",item);
+       
+      });

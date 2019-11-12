@@ -1,0 +1,82 @@
+<html>
+<head> Select an image to change your wallpaper
+<style>
+div.gallery {
+  margin: 5px;
+  border: 1px solid #ccc;
+  float: left;
+  width: 180px;
+  height: 180px;
+}
+
+div.gallery:hover {
+  border: 1px solid #777;
+}
+
+div.gallery img {
+  width: 100%;
+  height: 100%;
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="gallery">
+  <a target="_blank" href="forest.jpg">
+    <img id='green' class="pics" src="forest.jpg" alt="Green" width="300" height="300">
+  </a>
+</div>
+
+<div class="gallery">
+  <a target="_blank" href="purple.jpg">
+    <img id='purple'  class = "pics" src="purple.jpg" alt="Purple" width="300" height="300">
+  </a>
+</div>
+
+<div class="gallery">
+  <a target="_blank" href="red.jpeg">
+    <img id='red' class = "pics" src="red.jpeg" alt="Red Fishies" width="300" height="300">
+  </a>
+ 
+</div>
+
+<div class="gallery">
+  <a target="_blank" href="koyublue.jpg">
+    <img id='blue' class="pics" src="koyublue.jpg" alt="Dark Blue" width="300" height="300">
+  </a>
+ 
+</div>
+
+
+<script> 
+    window.$ = window.jQuery=require("jquery"); //In order to enable jQuery use in the electron document
+    const electron = require('electron');
+    const {ipcRenderer} = electron;
+    
+    /*
+    $(document).ready(function(){
+    $(".gallery").click(function(event){
+   
+    var link = $('.gallery img').attr('src');
+    ipcRenderer.send("click image",link[i]);
+    })
+    });*/
+    let x = document.getElementsByClassName("gallery");
+    let links = document.getElementsByClassName("pics");
+    var i;
+    for (i = 0; i < x.length; i++) {
+      x[i].addEventListener('click',function(event){
+        let link = document.getElementsByClassName("pics");
+        console.log(link);
+        ipcRenderer.send("click image",link[i].getAttribute('src'));
+    });
+    }
+    
+    
+   
+
+</script>
+</body>
+</html>
