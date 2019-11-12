@@ -1,0 +1,136 @@
+html, body{
+    height:100%;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+#addTaskBar ul{
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    background-color: #333;
+}
+#addTaskBar li{
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    float: left;
+}
+#addTaskBar li:hover{
+    background-color: #111;
+    cursor: pointer;
+}
+#date input{
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    border: none;
+}
+#addTaskBar img{
+    cursor: pointer;
+    height: 30px;
+    width: 30px;
+    margin: 10px 3px 0px 3px;
+    padding: 0px;
+}
+
+#addTaskForm{
+    padding: 20px;
+}
+#title{
+    display: block;
+    width: 100%;
+    font: 23px;
+}
+#start, #end{
+    width: 50%;
+    float: left;
+    text-align: center;
+}
+#start h1, #end h1{
+    margin: 10px 0px 5px 0px;
+}
+#start section, #end section{
+    padding: 0px;
+    width: 50px;
+    height: 140px;
+    float: left;
+    text-align: center;
+    margin: 0px 5px;
+}
+#start p, #end p{
+    padding: 0px;
+    margin: 0px;
+    font-size: 30px;
+}
+#fromHour img, #fromMinute img, #toHour img, #toMinute img{
+    width: 50px;
+    height: 50px;
+    display: block;
+    cursor: pointer;
+}
+
+#reminderText{
+    width: 100%;
+}
+#addReminderIcon, #removeReminderIcon{
+    height: 25px;
+    width:25px;
+    float: right;
+}
+#reminderPart div{
+    width: 100%;
+    margin-top: 10px;
+}
+
+#customReminder{
+    position: fixed;
+    padding: 20px 10px;
+    height: 50%;
+    width: 50%;
+    top: 25%;
+    left: 25%;
+    background-color: rgba(255, 248, 220, 0.959);
+    display: none;
+}
+#customReminder p{
+    margin: 0px;
+}
+#customAmount{
+    width: 50px;
+    text-align: center;
+    float: left;
+}
+#incCustomAmount, #decCustomAmount{
+    width: 50px;
+    height: 50px;
+    display: block;
+    cursor: pointer;
+}
+#customReminder select{
+    float: right;
+    margin: 40px 20px;
+}
+#customReminder ul{
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+    background-color: #333;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 50px;
+}
+#customReminder li{
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    cursor: pointer;
+}

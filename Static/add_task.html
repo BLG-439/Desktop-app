@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="add_task.css">
+    <title>Add Task</title>
+  </head>
+  <body>
+    <script>
+      window.$ = window.jQuery=require("jquery"); //In order to enable jQuery use in the electron document
+      const electron = require('electron');
+      const {ipcRenderer} = electron;
+    </script>
+    <div id="addTask">
+      <div id="addTaskBar">
+        <ul>
+          <li id="cancel">Cancel</li>
+          <img style="float: left;" id="decDate" src="C:\Users\DELL\Desktop\Git\Desktop background time scheduler app\venv\Desktop scheduler\Assets\Icons\Png\iconfinder_arrow-circle-left_1608515.png">
+          <li style="float: left;" id="date"></li>
+          <img id="incDate" src="C:\Users\DELL\Desktop\Git\Desktop background time scheduler app\venv\Desktop scheduler\Assets\Icons\Png\iconfinder_arrow-circle-right_1608520.png">
+          <li id="save" style="float: right">Save</li>
+        </ul>
+        <script>
+          // Closing the window
+          document.getElementById("cancel").onclick=function(e){
+            ipcRenderer.send("closeAddTask");
+          }
+
+          // Make window draggable
+          dragElement(document.getElementById("addTaskBar"));
+
+          function dragElement(elmnt) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (document.getElementById(elmnt.id + "header")) {
+              // if present, the header is where you move the DIV from:
+              document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+            } else {
+              // otherwise, move the DIV from anywhere inside the DIV:
+              elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+              e = e || window.event;
+              e.preventDefault();
+              // get the mouse cursor position at startup:
+              pos3 = e.clientX;
+              pos4 = e.clientY;
+              document.onmouseup = closeDragElement;
+              // call a function whenever the cursor moves:
+              document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+              e = e || window.event;
+              e.preventDefault();
+              ipcRenderer.send("moveAddTaskWindow", pos3, pos4, e.clientX, e.clientY);
+              // // calculate the new cursor position:
+              // pos1 = pos3 - e.clientX;
+              // pos2 = pos4 - e.clientY;
+              // pos3 = e.clientX;
+              // pos4 = e.clientY;
+              // // set the element's new position:
+              // document.getElementById("task-board").style.top = (document.getElementById("task-board").offsetTop - pos2) + "px";
+              // document.getElementById("task-board").style.left = (document.getElementById("task-board").offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+              // stop moving when mouse button is released:
+              document.onmouseup = null;
+              document.onmousemove = null;
+            }
+          }
+
+          // Saving the task with the SAVE button
+          document.getElementById("save").onclick=function(){
+            var title="No title",
+            fromTime=document.getElementById("fromTime").value,
+            toTime=document.getElementById("toTime").value,
+            date=document.getElementById("dateHolder").value,
+            reminders=["empty"], i;
+            if(document.getElementById("title").value!=""){
+              title=document.getElementById("title").value;
+            }
+            for(i=0; i<document.getElementById("reminderPart").childElementCount-1;i++){
+              reminders[i]=$("#reminder"+(i+1)+" select").val();
+            }
+            ipcRenderer.send("saveTask", date, title, fromTime, toTime, reminders);
+          }
+        </script>
+      </div>
+      <form id="addTaskForm">
+        <input type="date" hidden id="dateHolder">
+        <script>
+          // On creation of the addTask window
+          ipcRenderer.on("gettingDate", function(e, date){
+            document.getElementById("dateHolder").value=date;
+            document.getElementById("date").innerHTML = document.getElementById("dateHolder").value;
+          })
+          
+          //On decreasing the date
+          $("#decDate").click(function(){
+            document.getElementById("dateHolder").stepDown();
+            document.getElementById("date").innerHTML = document.getElementById("dateHolder").value;
+          })
+
+          //On increasing the date
+          $("#incDate").click(function(){
+            document.getElementById("dateHolder").stepUp();
+            document.getElementById("date").innerHTML = document.getElementById("dateHolder").value;
+          })
+        </script>
+        <input id="title" type="text" placeholder="Title" autofocus>
+        <input type="time" style="display: none;" id="fromTime">
+        <input type="time" style="display: none;" id="toTime">
+        <div id="start">
+          <h1>Start:</h1>
+          <section id="fromHour">
+              <img id="incStartHour" src=".\..\Assets\Icons\Png\iconfinder_basics-07_296828.png">
+              <p></p>
+              <img id="decStartHour" src=".\..\Assets\Icons\Png\iconfinder_basics-08_296826.png">
+          </section>
+          <p style="float: left; position:relative; top: 50px;">:</p>
+          <section id="fromMinute">
+            <img id="incStartMinute" src=".\..\Assets\Icons\Png\iconfinder_basics-07_296828.png">
+            <p></p>
+            <img id="decStartMinute" src=".\..\Assets\Icons\Png\iconfinder_basics-08_296826.png">
+          </section>
+        </div>
+        <div id="end">
+          <h1>To:</h1>
+          <section id="toHour">
+              <img id="incEndHour" src=".\..\Assets\Icons\Png\iconfinder_basics-07_296828.png">
+              <p></p>
+              <img id="decEndHour" src=".\..\Assets\Icons\Png\iconfinder_basics-08_296826.png">
+          </section>
+          <p style="float: left; position:relative; top: 50px;">:</p>
+          <section id="toMinute">
+            <img id="incEndMinute" src=".\..\Assets\Icons\Png\iconfinder_basics-07_296828.png">
+            <p></p>
+            <img id="decEndMinute" src=".\..\Assets\Icons\Png\iconfinder_basics-08_296826.png">
+          </section>
+        </div>
+        <script>
+          var now = new Date();
+          document.getElementById("fromTime").value = (now.getHours().toString().length==2 ? now.getHours() : ("0"+ now.getHours())) +":00";
+          document.getElementById("toTime").value = (now.getHours().toString().length==2 ? now.getHours() : ("0"+ now.getHours())) +":00";
+          document.getElementById("toTime").stepUp(60);
+          renderTimes();
+          $("#incStartHour").click(function(){
+            if((parseInt(document.getElementById("toTime").value.split(":")[0])*60)+parseInt(document.getElementById("toTime").value.split(":")[1])< (parseInt(document.getElementById("fromTime").value.split(":")[0])*60 +parseInt(document.getElementById("fromTime").value.split(":")[1])+60))
+            {
+              document.getElementById("fromTime").stepUp(60);
+              document.getElementById("toTime").stepUp(60);
+              renderTimes();
+            }
+            else{
+              document.getElementById("fromTime").stepUp(60);
+              renderFrom();
+            }
+          });
+          $("#decStartHour").click(function(){
+            document.getElementById("fromTime").stepDown(60);
+            renderFrom();
+          })
+  
+          $("#incStartMinute").click(function(){
+            if((parseInt(document.getElementById("toTime").value.split(":")[0])*60)+parseInt(document.getElementById("toTime").value.split(":")[1]) <= (parseInt(document.getElementById("fromTime").value.split(":")[0]*60 +parseInt(document.getElementById("fromTime").value.split(":")[1])))){
+              document.getElementById("fromTime").stepUp();
+              document.getElementById("toTime").stepUp();
+              renderTimes();
+            }
+            else{
+              document.getElementById("fromTime").stepUp();
+              renderFrom();
+            }
+          })
+          $("#decStartMinute").click(function(e){
+            document.getElementById("fromTime").stepDown();
+            renderFrom();
+          })
+  
+          $("#incEndHour").click(function(){
+            document.getElementById("toTime").stepUp(60);
+            $('#toHour p').html(document.getElementById("toTime").value.split(":")[0]);
+            $('#toMinute p').html(document.getElementById("toTime").value.split(":")[1]);
+          });
+          $("#decEndHour").click(function(){
+            if((parseInt(document.getElementById("toTime").value.split(":")[0])*60)+parseInt(document.getElementById("toTime").value.split(":")[1])-60 < (parseInt(document.getElementById("fromTime").value.split(":")[0])*60 +parseInt(document.getElementById("fromTime").value.split(":")[1]))){
+              document.getElementById("fromTime").stepDown(60);
+              document.getElementById("toTime").stepDown(60);
+              renderTimes();
+            }
+            else{
+              document.getElementById("toTime").stepDown(60);
+              renderTo();
+            }
+          })
+          
+          $("#incEndMinute").click(function(){
+            document.getElementById("toTime").stepUp();
+            renderTo();
+          })
+          $("#decEndMinute").click(function(e){
+            if(
+              (parseInt(document.getElementById("toTime").value.split(":")[0])*60)+parseInt(document.getElementById("toTime").value.split(":")[1]) -1 < (parseInt(document.getElementById("fromTime").value.split(":")[0]*60 +parseInt(document.getElementById("fromTime").value.split(":")[1]))))
+              {
+              document.getElementById("fromTime").stepDown();
+              document.getElementById("toTime").stepDown();
+              renderTimes();
+            }
+            else{
+              document.getElementById("toTime").stepDown();
+              renderTo();
+            }
+          })
+  
+          function renderFrom(){
+            $('#fromHour p').html(document.getElementById("fromTime").value.split(":")[0]);
+            $('#fromMinute p').html(document.getElementById("fromTime").value.split(":")[1]);
+          }
+          function renderTo(){
+            $('#toHour p').html(document.getElementById("toTime").value.split(":")[0]);
+            $('#toMinute p').html(document.getElementById("toTime").value.split(":")[1]);
+          }
+          function renderTimes(){
+            renderFrom();
+            renderTo();
+          }
+        </script>
+        <div id="reminderPart">
+          <p id="reminderText">Reminder <img id="addReminderIcon" src=".\..\Assets\Icons\Png\iconfinder_plus_325963.png"></p>
+        </div>
+        <script>
+          var callerReminder;
+          // Create a new reminder
+          $(document).on("click", "#addReminderIcon", function(){
+            var reminder = createReminder("reminder"+document.getElementById("reminderPart").childElementCount);
+            $("#reminderPart").append(reminder);
+            if(document.getElementById("reminderPart").childElementCount>=6){
+              document.getElementById("addReminderIcon").style.display= "none";
+            }
+
+            document.getElementById("reminder"+(document.getElementById("reminderPart").childElementCount-1)).addEventListener('change', function(e){
+              if(e.target.value=="custom"){
+                callerReminder=e.target.parentElement.id;
+                document.getElementById("customReminder").style.display ="block";
+                document.getElementById("addTask").style.display="none";
+              }
+            });
+          });
+
+          // Remove a reminder
+          $(document).on("click", "#removeReminderIcon", function(e){
+            var i, count;
+            if(document.getElementById("reminderPart").childElementCount==6){
+              document.getElementById("addReminderIcon").style.display= "block";
+            }
+            e.target.parentElement.remove();
+            for(i=0, count=1; i<=5; i++){
+              if(document.getElementById("reminder"+i)){
+                document.getElementById("reminder"+i).id="reminder"+count;
+                count++;
+              }
+            }
+          })
+
+          function createReminder(id){
+            return "<div id=\""+id+"\"><select><option value=\"On time\">On time</option><option value=\"15 min before\">15 min before</option><option value=\"20 min before\">20 min before</option><option value=\"25 min before\">25 min before</option><option value=\"30 min before\">30 min before</option><option value=\"45 min before\">45 min before</option><option value=\"1 hour before\">1 hour before</option><option value=\"custom\">Custom</option></select><img id=\"removeReminderIcon\" src=\".\\..\\Assets\\Icons\\Png\\iconfinder_minus_309051.png\"></div>";
+          }
+
+        </script>
+      </form>
+    </div>
+    <div id="customReminder">
+      <p>Remind:</p>
+        <section id="customAmount">
+          <input type="number" style="display: none;" id="amount">
+          <img id="incCustomAmount" src=".\..\Assets\Icons\Png\iconfinder_basics-07_296828.png">
+          <p></p>
+          <img id="decCustomAmount" src=".\..\Assets\Icons\Png\iconfinder_basics-08_296826.png">
+        </section>
+        <select id="measureAmount">
+          <option>minutes</option>
+          <option>hours</option>
+        </select>
+        <ul>
+          <li id="cancelCustom" style="float: left;">Cancel</li>
+          <li id="setCustom" style="float: right;">Set</li>
+        </ul>
+        <script>
+          document.getElementById("amount").value=15;
+          $("#customAmount p").html(document.getElementById("amount").value);
+
+          $("#incCustomAmount").click(function(){
+            if(document.getElementById("amount").value <99){
+              document.getElementById("amount").stepUp();
+              $("#customAmount p").html(document.getElementById("amount").value);
+            }
+          })
+          $("#decCustomAmount").click(function(){
+            if(document.getElementById("amount").value >0){
+              document.getElementById("amount").stepDown();
+              $("#customAmount p").html(document.getElementById("amount").value);
+            }
+          })
+          $("#cancelCustom").click(function(){
+            document.getElementById("customReminder").style.display ="none";
+            document.getElementById("addTask").style.display="block";
+          })
+          $("#setCustom").click(function(){
+            var response=document.getElementById("amount").value + " " + document.getElementById("measureAmount").value + " before";
+            $("#"+callerReminder+" select").append("<option>"+response+"</option>");
+            $("#"+callerReminder+" select").val(response);
+            document.getElementById("customReminder").style.display ="none";
+            document.getElementById("addTask").style.display="block";
+          })
+        </script>
+    </div>
+  </body>
+</html>
