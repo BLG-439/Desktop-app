@@ -3,13 +3,17 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="main.css">
-    <title>Hello World!</title>
+
+    <!-- ################################## -->
+    <link href="css/iCalendar.css" rel="stylesheet">
+    <script src="js/iCalendar.js"></script>
+    <!-- ################################## -->
+
+    <title>Task scheduler app!</title>
   </head>
   <body>
     <script>
       window.$ = window.jQuery=require("jquery"); //In order to enable jQuery use in the electron document
-      const electron = require('electron');
-      const {ipcRenderer} = electron;
     </script>
 
     <div class="container">
@@ -27,9 +31,66 @@
             ipcRenderer.send("closeApp");
           });
 
+
+
+          // Make window draggable
+          dragElement(document.getElementById("titleBar"));
+
+          function dragElement(elmnt) {
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            if (document.getElementById(elmnt.id + "header")) {
+              // if present, the header is where you move the DIV from:
+              document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+            } else {
+              // otherwise, move the DIV from anywhere inside the DIV:
+              elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+              e = e || window.event;
+              e.preventDefault();
+              // get the mouse cursor position at startup:
+              pos3 = e.clientX;
+              pos4 = e.clientY;
+              document.onmouseup = closeDragElement;
+              // call a function whenever the cursor moves:
+              document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+              e = e || window.event;
+              e.preventDefault();
+              ipcRenderer.send("moveMainWindow", pos3, pos4, e.clientX, e.clientY);
+              // // calculate the new cursor position:
+              // pos1 = pos3 - e.clientX;
+              // pos2 = pos4 - e.clientY;
+              // pos3 = e.clientX;
+              // pos4 = e.clientY;
+              // // set the element's new position:
+              // document.getElementById("task-board").style.top = (document.getElementById("task-board").offsetTop - pos2) + "px";
+              // document.getElementById("task-board").style.left = (document.getElementById("task-board").offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+              // stop moving when mouse button is released:
+              document.onmouseup = null;
+              document.onmousemove = null;
+            }
+          }
+
         </script>
       </div>
       <div id="content">
+        <div id="Weather">
+          <a class="weatherwidget-io" href="https://forecast7.com/en/41d0128d98/istanbul/" data-label_1="İSTANBUL" data-label_2="WEATHER" data-theme="original" >İSTANBUL WEATHER</a>
+          <script>
+          !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
+          </script>
+        </div>
+        <!-- ################################## -->
+        <span id="calendar"></span>
+        <!-- ################################## -->
+
         <div id="clockBlock">
             <canvas id="Clock" width="400" height="400"></canvas>
             <div id="numbers">
@@ -59,7 +120,7 @@
               
               function drawClock() {
                 ctx.beginPath();
-                ctx.arc(0, 0, radius*0.75, 0, 2*Math.PI);
+                ctx.arc(0, 0, radius*1, 0, 2*Math.PI);
                 ctx.fillStyle = 'white';
                 ctx.fill();
                 drawFace(ctx, radius);
@@ -143,21 +204,22 @@
                   date="0"+date;
                 }
                 var date = today.getFullYear()+'-'+month+'-'+date;
-                ipcRenderer.send("synchDate", date);
+                ipcRenderer.send("synchToday", date);
               }
     
+
+              // ######################################
+              var iCal = new iCalendar('calendar');
+              iCal.render();
+
+              document.addEventListener('iCalendarDateSelected', function(event) {
+                let date = iCal.selectedDate;
+                ipcRenderer.send("synchDate", date);
+              });
+              // ##################################
+              
             </script>
         </div>
-        <script>
-          const form=document.querySelector('form');
-          form.addEventListener('submit', submitForm);
-  
-          function submitForm(e){
-              e.preventDefault();
-              const item = document.querySelector("#input1").value;
-              ipcRenderer.send("event_kot", item);
-          }
-        </script>
   
         <img id="addTaskButton" src=".\..\Assets\Icons\Png\iconfinder_sign-add_299068.png">
         <script>
@@ -190,33 +252,194 @@
               }
             }
           });
-  
-          
+        
           $(document).ready(function(){
             $("#numbers p.Task").click(function(event){
-              ipcRenderer.send("openTasksWindow", dailyTasks[numbers.indexOf(event.target.id)]);
+              var today = new Date();
+              var month=today.getMonth()+1;
+              var date=today.getDate();
+              if(month.toString().length!=2){
+                month="0"+month;
+              }
+              if(date.toString().length!=2){
+                date="0"+date;
+              }
+              var date = today.getFullYear()+'-'+month+'-'+date;
+              ipcRenderer.send("openTasksWindow", dailyTasks[numbers.indexOf(event.target.id)], date);
             })
           });
         </script>
-        
-        <div id="Weather">
-          <a class="weatherwidget-io" href="https://forecast7.com/en/41d0128d98/istanbul/" data-label_1="İSTANBUL" data-label_2="WEATHER" data-theme="original" >İSTANBUL WEATHER</a>
-          <script>
-          !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-          </script>
-        </div>      
       </div>
-      <div id="settings">
+      <div id="settings" style="overflow: scroll;">
+        
+        
+        <!-- ################################## -->
+        <div id="app">
+          <label class="labelcolor">Current Zoom:</label> <span class="labelcolor" style="font-weight: bold;" id="current-value">15 px</span>
+          <br />
+          <input type="range" id="zoom" min="0" value="0" max="4" step="1">
+        </div>
+        <span data-bg-color="#b84130" data-color="#ffffff"
+        style="background-color: #b84130"></span>
+        <span data-bg-color="#363d98" data-color="#ffffff"
+        style="background-color: #363d98"></span>
+        <span data-bg-color="#FFD5CD" data-color="#333333"
+        style="background-color: #FFD5CD"></span>
+    
+        
+        <div>
+        <label class="labelcolor">Color:</label>
+        <input id='color' class="input-color-picker" type="color" data-id="color" name="Color">
+        <button id="font">Apply</button>
+        </div>
+    
+        <div>
+        <label  class="labelcolor" >Background:</label>
+        <input id="pickbgcolor" class="input-color-picker" type="color" 
+                data-id="bg-color" name="Background">
+        <button id="bgcolor">Apply</button>
+        </div>
+
+        <style>
+            div.gallery {
+              margin: 5px;
+              border: 1px solid #ccc;
+              float: left;
+              width: 180px;
+              height: 180px;
+            }
+            
+            div.gallery:hover {
+              border: 1px solid #777;
+              cursor: pointer;
+            }
+            
+            div.gallery img {
+              width: 100%;
+              height: 100%;
+            }
+            
+            
+            </style>
+            
+            
+            <div class="gallery">
+              
+                <img id='green' class="pics" src="forest.jpg" alt="Green" width="300" height="300">
+             
+            </div>
+            
+            <div class="gallery">
+             
+                <img id='purple'  class = "pics" src="purple.jpg" alt="Purple" width="300" height="300">
+            
+            </div>
+            
+            <div class="gallery">
+              
+                <img id='red' class = "pics" src="red.jpeg" alt="Red Fishies" width="300" height="300">
+             
+            </div>
+            
+            <div class="gallery">
+              
+                <img id='blue' class="pics" src="koyublue.jpg" alt="Dark Blue" width="300" height="300">
+              
+             
+            </div>
+      </div>
+        <script>
+          const {webFrame} = require('electron');
+          
+          let zoomLevelSpan = document.getElementById("current-value");
+
+          document.getElementById("zoom").addEventListener("input", function(){
+              var value = this.value;
+              $("body").css({'font-size': 15 + value*2.5 + "px"})
+              // Update zoom factor
+              // webFrame.setZoomFactor(parseInt(value));
+
+              // Update label
+              zoomLevelSpan.innerHTML = 15 + value*2.5 + "px";
+          }, false);
+
+          $(document).ready(function(){
+              $('#font').click(function(event){
+              var link =document.querySelector('input.input-color-picker').value;
+              console.log(link);
+              ipcRenderer.send("click font color",link);
+              })
+              });
+      
+          let labels = document.getElementsByClassName('labelcolor');
+          var i;
+          for(i = 0; i < labels.length; i++)
+          {labels[i].style.color = localStorage.getItem('color') ? localStorage.getItem('color') : '#000000';}
+          
+          ipcRenderer.on("click font color", function(e,link){        
+              let labels = document.getElementsByClassName('labelcolor');
+              var i;
+              for(i = 0; i < labels.length; i++)
+              {
+                labels[i].style.color = link; 
+                localStorage.setItem('color',link);
+              }
+          })
+          
+        
+        $(document).ready(function(){
+            $('#bgcolor').click(function(event){
+            var link =document.querySelector('#pickbgcolor').value;
+            console.log(link);
+            ipcRenderer.send("click bg color",link);
+            })
+            });
+
+          document.body.style.backgroundColor = localStorage.getItem('bg') ? localStorage.getItem('bg') : '#FFFFFF';
+
+          ipcRenderer.on("click bg color", function(e,link){        
+              document.body.style.backgroundColor = link;
+
+              localStorage.setItem('bg',link);
+              
+              })
+        
+        
+        document.body.style.backgroundImage = localStorage.getItem('back') ? "url('"+localStorage.getItem('back')+"')": "url('red.jpeg')";
+
+          let x = document.getElementsByClassName("pics");
+          //let links = document.getElementsByClassName("pics");
+          var i;
+          for (i = 0; i < x.length; i++) {
+            x[i].addEventListener('click',function(event){
+              //let link = document.getElementsByClassName("pics");
+              //console.log(link);
+              ipcRenderer.send("click image",this.getAttribute('src'));
+          });
+          }
+    
+
+        ipcRenderer.on("click image", function(e,link){
+       
+       document.body.style.backgroundImage = "url('"+link+"')";
+       localStorage.setItem('back',link);
+       })
+
+
+        </script>
+        <!-- ################################## -->
+
 
       </div>
       <script>
+      
         var appeared=false;
         $("#settingsIcon").click(function(){
           var elem = document.getElementById("settings");   
           if(appeared){
             var pos = 0;
             var id = setInterval(function(){
-                if (pos == -206) {
+                if (pos == -218) {
                 clearInterval(id);
               } else {
                 pos--;
@@ -226,7 +449,7 @@
             appeared=false;
           }
           else{
-            var pos = -206;
+            var pos = -218;
             var id = setInterval(function(){
                 if (pos == 0) {
                 clearInterval(id);
@@ -238,6 +461,73 @@
             appeared=true;
           }
         });
+    
+        var holdData=[];
+        var hold;
+        var dates=document.getElementsByClassName("calendarLink");
+        for(let i=0; i<dates.length; i++){
+          hold=dates[i].dataset.id;
+
+          if(hold.length != 10){
+            hold=hold.split("-");
+            for(var j=1; j<3; j++){
+              if(hold[j].length!=2){
+                hold[j]="0"+hold[j];
+              }
+            }
+            hold=hold[0]+"-"+hold[1]+"-"+hold[2];
+          }
+          holdData.push(hold);
+        }
+
+        ipcRenderer.send("fillCalendar", holdData);
+        ipcRenderer.on("dateTasks", function(e, dict){
+          var hold=[];
+          for(let i=0; i<dates.length; i++){
+            if(dates[i].dataset.id.length != 10){
+              hold=dates[i].dataset.id.split("-");
+              hold=hold[0]+"-"+hold[1]+"-0"+hold[2];
+            }
+            else{
+              hold=dates[i].dataset.id;
+            }
+            if(dict.hasOwnProperty(hold)){
+              dates[i].style.color = "magenta";
+              var titles=[];
+              for(let j=0; j<dict[hold].length && j<2; j++){
+                dates[i].parentElement.innerHTML += "<p>" + dict[hold][j] + "</p>";
+              }
+              if(dict[hold].length>2){
+                dates[i].parentElement.innerHTML += "<div class=\"moreTasks\"><h6>"+(dict[hold].length - 2)+"+</h6></div>";
+              }
+
+              dates[i].parentElement.addEventListener("wheel", function(e){
+                e = window.event || e;
+                var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+                e.target.scrollLeft -= (delta*40); // Multiplied by 40
+                e.preventDefault();
+              })
+
+              dates[i].addEventListener("wheel", function(e){
+                e = window.event || e;
+                var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+                e.target.parentElement.scrollLeft -= (delta*40); // Multiplied by 40
+                e.preventDefault();
+              })
+
+              dates[i].parentElement.querySelectorAll("p").forEach(function(node){
+                node.addEventListener("wheel", function(e){
+                  e = window.event || e;
+                  var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+                  e.target.parentElement.scrollLeft -= (delta*40); // Multiplied by 40
+                  e.preventDefault();
+                })
+              })
+            }
+          }
+
+
+        })
       </script>
     </div>
     </body>

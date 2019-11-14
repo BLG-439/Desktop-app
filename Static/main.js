@@ -14,6 +14,9 @@ let item1Window; //-> Another window variable
 let tasksWindow; //-> Variable to represent the window of tasks
 let addTaskWindow; //-> Variable for adding a new task window
 
+const mainWindowWidth=850;
+const mainWindowHeight=600;
+
 let clockNums=["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"]; //Clock numbers as reference for the correct time
 
 //Firstly, in electron, we have to listen when the app is ready in order to run the functions
@@ -22,8 +25,8 @@ app.on('ready', function(){
     //Create new window
     mainWindow= new BrowserWindow(
         {
-            width: 850,
-            height: 600,
+            width: mainWindowWidth,
+            height: mainWindowHeight,
             webPreferences: {
                 nodeIntegration: true //In order to use nodejs script on html file
             },
@@ -47,8 +50,9 @@ app.on('ready', function(){
             label: 'Quit', 
             accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q', //darwin is the value of that variable if on Mac. TRY: node -> process.platform.  IN ORDER TO USE KEY SHORTCUT FOR THIS ITEM
             click(){
-            app.quit();
-        }}
+                app.quit();
+            }
+        }
     ])
     tray.setContextMenu(contextMenu);
     
@@ -77,6 +81,19 @@ ipcMain.on("minimizeMainWindow", function(event){
 
 ipcMain.on("closeApp", function(){
     app.quit();
+})
+
+ipcMain.on("moveMainWindow", function(e, x1, y1, x2, y2){
+    let display = electron.screen.getPrimaryDisplay();
+    let kot=mainWindow.getPosition();
+
+    const { width, height } = display.bounds
+    mainWindow.setBounds({
+        x: kot[0]+x2-x1,
+        y: kot[1]+y2-y1,
+        width: mainWindowWidth,
+        height: mainWindowHeight
+    })
 })
 
 
@@ -195,12 +212,12 @@ function createTasksWindow(){
     });
 }
 
-ipcMain.on("openTasksWindow", function(e, tasks){
+ipcMain.on("openTasksWindow", function(e, tasks, date){
     createTasksWindow();
     function showTasks(tasks){
-        tasksWindow.webContents.send("showTasks", tasks);
+        tasksWindow.webContents.send("showTasks", tasks, date);
     }
-    setTimeout(showTasks, 1000, tasks);
+    setTimeout(showTasks, 500, tasks);
 })
 
 ipcMain.on("moveTasksWindow", function(e, x1, y1, x2, y2){
@@ -254,7 +271,7 @@ ipcMain.on("addNewTask", function(e, date){
     function getTheDate(date){
         addTaskWindow.webContents.send("gettingDate", date);
     }
-    setTimeout(getTheDate, 1000, date);
+    setTimeout(getTheDate, 500, date);
 });
 ipcMain.on("moveAddTaskWindow", function(e, x1, y1, x2, y2){
     let display = electron.screen.getPrimaryDisplay();
@@ -281,9 +298,9 @@ ipcMain.on("saveTask", function(e, date, title, fromTime, toTime, reminders){//S
 
 
 //Synchronization functions
-ipcMain.on("synchDate", function(e, date){
+ipcMain.on("synchToday", function(e, date){
     var fs = require("fs");
-    var stream = fs.readFileSync("C:/Users/DELL/Desktop/Git/Desktop background time scheduler app/venv/Desktop scheduler/temp.txt", 'utf8');
+    var stream = fs.readFileSync("./temp.txt", 'utf8');
     var tasks=stream.split("\n");
     var hold=[];
     for(var i=0; i<tasks.length-1; i++){
@@ -294,3 +311,63 @@ ipcMain.on("synchDate", function(e, date){
     }
     mainWindow.webContents.send("dailyTasks", hold);
 });
+
+
+ipcMain.on("click font color",function(e,link){
+    console.log('red');
+    mainWindow.webContents.send("click font color",link);
+    //fontWindow.close();
+    })
+
+    ipcMain.on("click bg color",function(e,link){
+        mainWindow.webContents.send("click bg color",link);
+        //fontWindow.close();
+    })
+
+    ipcMain.on("click image",function(e,link){
+        console.log('red');
+        mainWindow.webContents.send("click image",link);
+    })
+
+    ipcMain.on("synchDate", function(e, date){
+        var fs = require("fs");
+        var stream = fs.readFileSync("./temp.txt", 'utf8');
+        var tasks=stream.split("\n");
+        var hold=[];
+        for(var i=0; i<tasks.length-1; i++){
+            tasks[i]=tasks[i].split("||");
+            if(tasks[i][0]==date){
+                hold.push(tasks[i]);
+            }
+        }
+
+        createTasksWindow();
+        function showTasks(tasks){
+            tasksWindow.webContents.send("showTasks", hold);
+        }
+        setTimeout(showTasks, 500, tasks);
+    })
+
+
+ipcMain.on("fillCalendar", function(e, dates){
+    var fs = require("fs");
+    var stream = fs.readFileSync("./temp.txt", 'utf8');
+    var tasks=stream.split("\n");
+    var dict={}
+    for(var i=0; i<tasks.length-1; i++){
+        tasks[i]=tasks[i].split("||");
+        for(var j=0; j<dates.length; j++){
+            if(tasks[i][0]==dates[j]){
+                if(dict[dates[j]]){
+                    dict[dates[j]].push(tasks[i][1]);
+                }
+                else{
+                    dict[dates[j]] = new Array();
+                    dict[dates[j]].push(tasks[i][1]);
+                }
+            }
+        }
+    }
+    mainWindow.webContents.send("dateTasks", dict);
+})
+

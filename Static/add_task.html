@@ -93,6 +93,15 @@
         <script>
           // On creation of the addTask window
           ipcRenderer.on("gettingDate", function(e, date){
+            if(date.length != 10){
+              let hold=date.split("-");
+              for(var i=1; i<3; i++){
+                if(hold[i].length!=2){
+                  hold[i]="0"+hold[i];
+                }
+              }
+              date=hold[0]+"-"+hold[1]+"-"+hold[2];
+            }
             document.getElementById("dateHolder").value=date;
             document.getElementById("date").innerHTML = document.getElementById("dateHolder").value;
           })
@@ -316,5 +325,6 @@
           })
         </script>
     </div>
+ 
   </body>
 </html>

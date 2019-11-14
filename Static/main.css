@@ -6,6 +6,7 @@ html, body{
     top: 0px;
     padding: 0px;
     margin: 0px;
+    font-size: 15px;
     /* overflow: hidden; */
 }
 
@@ -80,6 +81,7 @@ html, body{
     position: relative;
     width: 400px;
     height: 400px;
+    float: right;
 }
 
 #numbers p{
@@ -150,7 +152,7 @@ html, body{
 #addTaskButton{
     position: absolute;
     right: 40px;
-    bottom: 100px;
+    bottom: 35px;
     height: 60px;
     width: 60px;
     cursor: pointer;
@@ -170,6 +172,44 @@ html, body{
     height: 559px;
     width: 200px;
     top: 35px;
-    left: -206px;
+    left: -218px;
     background: rgba(4, 0, 65, 0.959);
+    padding: 10px;
+}
+
+#cal{
+    width: 350px;
+    height: 300px;
+    float: left;
+}
+
+.day{
+    white-space: nowrap;
+    overflow-y: hidden;
+    overflow-x: scroll;
+}
+
+.day p{
+    width: 45px;
+    margin: 0px;
+    padding: 0px;
+    font-size: 50%;
+}
+
+
+.moreTasks{
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    background: grey;
+    color: white;
+    height: 15px;
+    width: 15px;
+    border-radius: 100%;
+    font-size: 75%;
+    text-align: center;
+}
+
+.moreTasks h6{
+    margin: 0px;
 }
